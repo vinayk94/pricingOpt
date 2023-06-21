@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image Processing</title>
+    <style>
+      #result-image {
+        max-width: 500px;
+        max-height: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="file" id="json-upload" accept=".json" />
+    <button onclick="processJson()">Process JSON</button>
+    <div id="result"></div>
+
+    <script>
+      function processJson() {
+        const fileInput = document.getElementById("json-upload");
+        const file = fileInput.files[0];
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+          const json = event.target.result;
+
+          fetch("/generate_image", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: json,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const resultImage = document.createElement("img");
+              resultImage.src = "data:image/png;base64," + data.processed_image_base64;
+              resultImage.id = "result-image";
+
+              const resultDiv = document.getElementById("result");
+              resultDiv.innerHTML = "";
+              resultDiv.appendChild(resultImage);
+            })
+            .catch((error) => console.log(error));
+        };
+
+        reader.readAsText(file);
+      }
+    </script>
+  </body>
+</html>
